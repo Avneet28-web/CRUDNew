@@ -1,49 +1,143 @@
 package com.example.hrmanagementavneet;
 
-public class AdminController {
-    public class Admin {
-        private int userid;
-        private String name;
-        private String password;
-        private String country;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-        public Admin(int userid, String name, String password, String country) {
-            this.userid = userid;
-            this.name = name;
-            this.password = password;
-            this.country = country;
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.sql.*;
+
+public class AdminController implements Initializable {
+    public TableView<Admin> adminTable;
+    public TableColumn<Admin, Integer> userid;
+    public TableColumn<Admin, String> name;
+    public TableColumn<Admin, String> password;
+    public TableColumn<Admin, String> country;
+    public TextField uid;
+    public TextField uname;
+    public TextField upassword;
+    public TextField ucountry;
+    @FXML
+    private Label welcomeText;
+
+    ObservableList<Admin> list = FXCollections.observableArrayList();
+
+    @FXML
+    protected void onHelloButtonClick() {
+        fetchData();
+    }
+
+    private void fetchData() {
+        list.clear();
+
+        String jdbcUrl = "jdbc:mysql://localhost:3306/csd_lab3_avneet";
+        String dbUser = "root";
+        String dbPassword = "";
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword)) {
+            String query = "SELECT * FROM admin";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()) {
+                int userid = resultSet.getInt("Userid");
+                String name = resultSet.getString("Name");
+                String password = resultSet.getString("Password");
+                String country = resultSet.getString("Country");
+                adminTable.getItems().add(new Admin(userid, name, password, country));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+    }
 
-        public int getUserid() {
-            return userid;
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        userid.setCellValueFactory(new PropertyValueFactory<>("userid"));
+        name.setCellValueFactory(new PropertyValueFactory<>("name"));
+        password.setCellValueFactory(new PropertyValueFactory<>("password"));
+        country.setCellValueFactory(new PropertyValueFactory<>("country"));
+        adminTable.setItems(list);
+    }
+
+    public void InsertData(ActionEvent actionEvent) {
+        String name = uname.getText();
+        String password = upassword.getText();
+        String country = ucountry.getText();
+
+        String jdbcUrl = "jdbc:mysql://localhost:3306/csd_lab3_avneet";
+        String dbUser = "root";
+        String dbPassword = "";
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword)) {
+            String query = "INSERT INTO admin (Name, Password, Country) VALUES ('" + name + "','" + password + "','" + country + "')";
+            Statement statement = connection.createStatement();
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+    }
 
-        public void setUserid(int userid) {
-            this.userid = userid;
+    public void UpdateData(ActionEvent actionEvent) {
+        String userid = uid.getText();
+        String name = uname.getText();
+        String password = upassword.getText();
+        String country = ucountry.getText();
+
+        String jdbcUrl = "jdbc:mysql://localhost:3306/csd_lab3_avneet";
+        String dbUser = "root";
+        String dbPassword = "";
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword)) {
+            String query = "UPDATE admin SET Name='" + name + "', Password='" + password + "', Country='" + country + "' WHERE Userid='" + userid + "'";
+            Statement statement = connection.createStatement();
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+    }
 
-        public String getName() {
-            return name;
+    public void DeleteData(ActionEvent actionEvent) {
+        String userid = uid.getText();
+
+        String jdbcUrl = "jdbc:mysql://localhost:3306/csd_lab3_avneet";
+        String dbUser = "root";
+        String dbPassword = "";
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword)) {
+            String query = "DELETE FROM admin WHERE Userid='" + userid + "'";
+            Statement statement = connection.createStatement();
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+    }
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public void LoadData(ActionEvent actionEvent) {
+        String userid = uid.getText();
 
-        public String getPassword() {
-            return password;
-        }
+        String jdbcUrl = "jdbc:mysql://localhost:3306/csd_lab3_avneet";
+        String dbUser = "root";
+        String dbPassword = "";
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword)) {
+            String query = "SELECT * FROM admin WHERE Userid='" + userid + "'";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                String name = resultSet.getString("Name");
+                String password = resultSet.getString("Password");
+                String country = resultSet.getString("Country");
 
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getCountry() {
-            return country;
-        }
-
-        public void setCountry(String country) {
-            this.country = country;
+                uname.setText(name);
+                upassword.setText(password);
+                ucountry.setText(country);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
+
